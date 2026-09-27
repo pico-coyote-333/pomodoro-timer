@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro Timer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; font-family: system-ui, sans-serif; }
+  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #fdf3ee; }
+  .card { text-align: center; width: 320px; }
+  h1 { font-size: 1.2rem; color: #7a4a2b; margin-bottom: 1.5rem; }
+  .modes { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.5rem; }
+  .modes button { border: 1px solid #e07a3f; background: #fff; color: #e07a3f; }
+  .modes button.on { background: #e07a3f; color: #fff; }
+  button { padding: .6rem 1.2rem; border: 0; border-radius: 8px; background: #e07a3f; color: #fff; font-size: 1rem; cursor: pointer; }
+  .time { font-size: 4.5rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #2c2418; margin-bottom: 1rem; }
+  .round { color: #9a917f; margin-top: 1rem; }
+  .controls { display: flex; gap: .5rem; justify-content: center; }
+  #reset { background: #cfc7b8; color: #2c2418; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Pomodoro</h1>
+  <div class="modes">
+    <button data-m="focus" class="on">Focus 25</button>
+    <button data-m="short">Break 5</button>
+    <button data-m="long">Rest 15</button>
+  </div>
+  <div class="time" id="t">25:00</div>
+  <div class="controls"><button id="start">Start</button><button id="reset">Reset</button></div>
+  <p class="round" id="r">Completed sessions: 0</p>
+</div>
+<script>
+const DUR = { focus: 25*60, short: 5*60, long: 15*60 };
+let mode = 'focus', left = DUR.focus, timer = null, done = 0;
+const t = document.getElementById('t'), startBtn = document.getElementById('start');
+function show() { t.textContent = `${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`; }
+function stop() { clearInterval(timer); timer = null; startBtn.textContent = 'Start'; }
+function tick() {
+  if (--left <= 0) {
+    stop(); left = 0; show();
+    if (mode === 'focus') { done++; document.getElementById('r').textContent = 'Completed sessions: ' + done; }
+    new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=').play().catch(()=>{});
+    return;
+  }
+  show();
+}
+startBtn.onclick = () => {
+  if (timer) { stop(); } else { timer = setInterval(tick, 1000); startBtn.textContent = 'Pause'; }
+};
+document.getElementById('reset').onclick = () => { stop(); left = DUR[mode]; show(); };
+document.querySelectorAll('.modes button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.modes button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); mode = b.dataset.m; stop(); left = DUR[mode]; show();
+});
+show();
+</script>
+</body>
+</html>
